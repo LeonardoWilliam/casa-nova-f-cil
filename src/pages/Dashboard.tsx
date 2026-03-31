@@ -278,6 +278,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-// Need to import Target
-import { Target } from "lucide-react";
