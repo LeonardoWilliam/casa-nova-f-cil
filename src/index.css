@@ -2,56 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @layer base {
   :root {
-    --background: 140 20% 98%;
-    --foreground: 210 25% 12%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 25% 12%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 25% 12%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 152 58% 38%;
+    --primary: 142 71% 35%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 65% 50%;
+    --secondary: 217 91% 60%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 140 15% 94%;
-    --muted-foreground: 210 10% 45%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 43 96% 56%;
-    --accent-foreground: 210 25% 12%;
+    --accent: 142 71% 35%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 140 12% 90%;
-    --input: 140 12% 90%;
-    --ring: 152 58% 38%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 142 71% 35%;
 
     --radius: 0.75rem;
 
-    --success: 152 58% 38%;
-    --warning: 43 96% 56%;
-    --danger: 0 72% 51%;
+    --success: 142 71% 35%;
+    --warning: 38 92% 50%;
+    --danger: 0 84% 60%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(152, 58%, 38%), hsl(170, 55%, 40%));
-    --gradient-hero: linear-gradient(160deg, hsl(152, 58%, 32%), hsl(210, 65%, 45%));
-    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%), hsl(140, 20%, 97%));
+    --gradient-primary: linear-gradient(135deg, hsl(142, 71%, 35%), hsl(142, 71%, 45%));
+    --gradient-hero: linear-gradient(160deg, hsl(142, 71%, 30%), hsl(217, 91%, 50%));
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%), hsl(210, 40%, 97%));
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 152 58% 38%;
+    --sidebar-primary: 142 71% 35%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 140 15% 94%;
-    --sidebar-accent-foreground: 210 25% 12%;
-    --sidebar-border: 140 12% 90%;
-    --sidebar-ring: 152 58% 38%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 142 71% 35%;
   }
 }
 
@@ -62,7 +62,7 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
   }
 }
 
@@ -92,6 +92,6 @@
     color: hsl(var(--danger));
   }
   .glass-card {
-    @apply bg-card/80 backdrop-blur-md border border-border/50 shadow-lg;
+    @apply bg-card/90 backdrop-blur-md border border-border/50 shadow-lg;
   }
 }
