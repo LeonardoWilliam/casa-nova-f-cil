@@ -7,7 +7,8 @@ import {
   getEntradaImovel,
   formatCurrency,
 } from "@/lib/financial-store";
-import { ArrowLeft, Target, Home, Calculator, CheckCircle2, Circle, Lock } from "lucide-react";
+import { ArrowLeft, Target, CheckCircle2, Circle, Lock, Home, Flame } from "lucide-react";
+import { BottomNav } from "@/components/BottomNav";
 
 interface SubMeta {
   title: string;
@@ -23,10 +24,7 @@ export default function Goals() {
 
   useEffect(() => {
     const p = getProfile();
-    if (!p.onboardingCompleto) {
-      navigate("/");
-      return;
-    }
+    if (!p.onboardingCompleto) { navigate("/"); return; }
     setProfile(p);
   }, [navigate]);
 
@@ -59,38 +57,35 @@ export default function Goals() {
     },
   ];
 
-  const totalProgress =
-    subMetas.reduce((acc, m) => acc + m.progress, 0) / subMetas.length;
+  const totalProgress = subMetas.reduce((acc, m) => acc + m.progress, 0) / subMetas.length;
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="gradient-hero px-4 pt-6 pb-8 rounded-b-3xl">
+      <div className="gradient-hero px-4 pt-6 pb-8 rounded-b-[2rem]">
         <div className="max-w-md mx-auto">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-2">
             <button onClick={() => navigate("/dashboard")} className="text-primary-foreground">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <Target className="w-6 h-6 text-primary-foreground" />
-            <span className="text-lg font-bold text-primary-foreground">Minhas Metas</span>
+            <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
+              <Target className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <h1 className="text-lg font-bold text-primary-foreground">Minhas Metas</h1>
           </div>
         </div>
       </div>
 
       <div className="max-w-md mx-auto px-4 -mt-4 space-y-4">
         {/* Meta principal */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-2xl p-5"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="bg-card rounded-2xl p-5 shadow-lg border border-border">
           <div className="text-center mb-4">
-            <div className="text-4xl mb-2">🏡</div>
+            <div className="text-4xl mb-2">🏠</div>
             <h2 className="text-xl font-bold text-foreground">Comprar minha casa</h2>
             <p className="text-sm text-muted-foreground mt-1">
               Imóvel de {formatCurrency(profile.valorImovel)}
             </p>
           </div>
-
           <div className="w-full h-4 bg-muted rounded-full overflow-hidden mb-2">
             <motion.div
               className="h-full gradient-primary rounded-full"
@@ -106,13 +101,9 @@ export default function Goals() {
 
         {/* Sub-metas */}
         {subMetas.map((meta, i) => (
-          <motion.div
-            key={meta.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+          <motion.div key={meta.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * (i + 1) }}
-            className={`glass-card rounded-2xl p-5 ${meta.locked ? "opacity-60" : ""}`}
-          >
+            className={`bg-card rounded-2xl p-5 shadow-lg border border-border ${meta.locked ? "opacity-60" : ""}`}>
             <div className="flex items-start gap-3">
               <div className="mt-0.5">
                 {meta.progress >= 1 ? (
@@ -129,10 +120,7 @@ export default function Goals() {
                 {meta.target > 0 && (
                   <>
                     <div className="w-full h-2 bg-muted rounded-full overflow-hidden mt-3 mb-1">
-                      <div
-                        className="h-full gradient-primary rounded-full transition-all"
-                        style={{ width: `${meta.progress * 100}%` }}
-                      />
+                      <div className="h-full gradient-primary rounded-full transition-all" style={{ width: `${meta.progress * 100}%` }} />
                     </div>
                     <div className="flex justify-between text-[10px] text-muted-foreground">
                       <span>{formatCurrency(meta.target * meta.progress)}</span>
@@ -145,48 +133,28 @@ export default function Goals() {
           </motion.div>
         ))}
 
-        {/* Motivational */}
-        <motion.div
+        {/* Modo Disciplina 90 dias */}
+        <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-primary/5 rounded-2xl p-5 text-center"
+          onClick={() => navigate("/disciplina")}
+          className="w-full bg-primary/5 border-2 border-primary/20 rounded-2xl p-5 text-center hover:bg-primary/10 transition-colors"
         >
+          <Flame className="w-8 h-8 text-primary mx-auto mb-2" />
+          <h3 className="font-bold text-foreground">🔥 Modo Disciplina 90 Dias</h3>
+          <p className="text-xs text-muted-foreground mt-1">Desafio diário para acelerar sua meta</p>
+        </motion.button>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+          className="bg-primary/5 rounded-2xl p-5 text-center">
           <p className="text-sm text-foreground font-medium">
             💪 Cada real economizado te aproxima do seu sonho!
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Continue firme, você está no caminho certo.
           </p>
         </motion.div>
       </div>
 
-      {/* Bottom nav */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
-        <div className="max-w-md mx-auto flex">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="flex-1 py-3 flex flex-col items-center gap-1 text-muted-foreground"
-          >
-            <Home className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Início</span>
-          </button>
-          <button
-            onClick={() => navigate("/simulador")}
-            className="flex-1 py-3 flex flex-col items-center gap-1 text-muted-foreground"
-          >
-            <Calculator className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Simulador</span>
-          </button>
-          <button
-            onClick={() => navigate("/metas")}
-            className="flex-1 py-3 flex flex-col items-center gap-1 text-primary"
-          >
-            <Target className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Metas</span>
-          </button>
-        </div>
-      </div>
+      <BottomNav />
     </div>
   );
 }

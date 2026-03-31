@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput } from "@/components/CurrencyInput";
+import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import {
   FinancialProfile,
@@ -9,28 +10,34 @@ import {
   getValorImovelSugerido,
   getSaldo,
 } from "@/lib/financial-store";
-import { Home, ArrowRight, ArrowLeft, Wallet, CreditCard, Target, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, Wallet, CreditCard, AlertCircle, Clock, Home } from "lucide-react";
 
 const STEPS = [
-  { title: "Qual é sua renda mensal?", icon: Wallet, field: "renda" },
-  { title: "Seus gastos fixos mensais", icon: CreditCard, field: "gastos" },
-  { title: "Gastos variáveis e dívidas", icon: CreditCard, field: "extras" },
-  { title: "Sua meta: comprar uma casa! 🏡", icon: Target, field: "meta" },
-  { title: "Tudo pronto!", icon: Sparkles, field: "resumo" },
-] as const;
+  { title: "Qual é seu nome?", subtitle: "Para personalizar sua experiência", icon: Home },
+  { title: "Quanto você ganha por mês?", subtitle: "Informe seu salário líquido", icon: Wallet },
+  { title: "Seus gastos fixos?", subtitle: "Principais contas mensais", icon: CreditCard },
+  { title: "Você tem dívidas?", subtitle: "Cartão, empréstimos, etc.", icon: AlertCircle },
+  { title: "Em quanto tempo quer comprar sua casa?", subtitle: "Escolha seu prazo ideal", icon: Clock },
+];
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<FinancialProfile>({
+    nome: "",
     rendaMensal: 0,
-    gastosFixos: { aluguel: 0, contas: 0, transporte: 0, alimentacao: 0, outros: 0 },
+    gastosFixos: { aluguel: 0, luz: 0, internet: 0, transporte: 0, alimentacao: 0, outros: 0 },
     gastosVariaveis: 0,
+    temDividas: false,
     dividas: 0,
     valorImovel: 250000,
     prazoAnos: 5,
     metaMensalEconomia: 0,
+    totalEconomizado: 0,
     onboardingCompleto: false,
+    disciplinaAtiva: false,
+    disciplinaDiaInicio: "",
+    disciplinaCheckins: [],
   });
 
   const updateGasto = (key: keyof typeof profile.gastosFixos, val: number) => {
@@ -38,17 +45,19 @@ export default function Onboarding() {
   };
 
   const canNext = () => {
-    if (step === 0) return profile.rendaMensal > 0;
+    if (step === 0) return profile.nome.trim().length > 0;
+    if (step === 1) return profile.rendaMensal > 0;
     return true;
   };
 
   const handleFinish = () => {
     const saldo = getSaldo(profile);
     const meta = Math.max(saldo * 0.5, 100);
+    const valorImovel = profile.valorImovel || getValorImovelSugerido(profile.rendaMensal);
     const finalProfile: FinancialProfile = {
       ...profile,
       metaMensalEconomia: meta,
-      valorImovel: profile.valorImovel || getValorImovelSugerido(profile.rendaMensal),
+      valorImovel,
       onboardingCompleto: true,
     };
     saveProfile(finalProfile);
@@ -68,11 +77,11 @@ export default function Onboarding() {
   const StepIcon = STEPS[step].icon;
 
   return (
-    <div className="min-h-screen flex flex-col gradient-hero">
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Progress bar */}
-      <div className="w-full h-1 bg-primary-foreground/20">
+      <div className="w-full h-1.5 bg-muted">
         <motion.div
-          className="h-full bg-primary-foreground"
+          className="h-full gradient-primary"
           initial={{ width: 0 }}
           animate={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
           transition={{ duration: 0.4 }}
@@ -86,8 +95,10 @@ export default function Onboarding() {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-2 mb-8"
         >
-          <Home className="w-8 h-8 text-primary-foreground" />
-          <span className="text-2xl font-bold text-primary-foreground">CasaMeta</span>
+          <div className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center">
+            <Home className="w-4 h-4 text-primary-foreground" />
+          </div>
+          <span className="text-xl font-bold text-foreground">GranaCasa</span>
         </motion.div>
 
         <AnimatePresence mode="wait">
@@ -99,19 +110,30 @@ export default function Onboarding() {
             transition={{ duration: 0.3 }}
             className="w-full max-w-md"
           >
-            <div className="glass-card rounded-2xl p-6 space-y-6">
+            <div className="bg-card rounded-2xl p-6 shadow-lg border border-border space-y-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
                   <StepIcon className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <h2 className="text-lg font-bold text-foreground">{STEPS[step].title}</h2>
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">{STEPS[step].title}</h2>
+                  <p className="text-xs text-muted-foreground">{STEPS[step].subtitle}</p>
+                </div>
               </div>
 
               {step === 0 && (
                 <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Informe quanto você recebe por mês (salário líquido).
-                  </p>
+                  <Input
+                    value={profile.nome}
+                    onChange={(e) => setProfile((p) => ({ ...p, nome: e.target.value }))}
+                    placeholder="Seu nome"
+                    className="text-base h-12 rounded-xl"
+                  />
+                </div>
+              )}
+
+              {step === 1 && (
+                <div className="space-y-4">
                   <CurrencyInput
                     value={profile.rendaMensal}
                     onChange={(v) => setProfile((p) => ({ ...p, rendaMensal: v }))}
@@ -120,15 +142,15 @@ export default function Onboarding() {
                 </div>
               )}
 
-              {step === 1 && (
+              {step === 2 && (
                 <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">Seus principais gastos fixos:</p>
                   {([
                     ["aluguel", "Aluguel"],
-                    ["contas", "Contas (luz, água, internet)"],
+                    ["luz", "Luz"],
+                    ["internet", "Internet"],
                     ["transporte", "Transporte"],
                     ["alimentacao", "Alimentação"],
-                    ["outros", "Outros fixos"],
+                    ["outros", "Outros"],
                   ] as const).map(([key, label]) => (
                     <div key={key}>
                       <label className="text-sm font-medium text-foreground">{label}</label>
@@ -141,107 +163,64 @@ export default function Onboarding() {
                 </div>
               )}
 
-              {step === 2 && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground">
-                      Gastos variáveis estimados
-                    </label>
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Lazer, compras, delivery, etc.
-                    </p>
-                    <CurrencyInput
-                      value={profile.gastosVariaveis}
-                      onChange={(v) => setProfile((p) => ({ ...p, gastosVariaveis: v }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground">
-                      Total de dívidas pendentes
-                    </label>
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Cartão, empréstimos, etc. (0 se não tiver)
-                    </p>
-                    <CurrencyInput
-                      value={profile.dividas}
-                      onChange={(v) => setProfile((p) => ({ ...p, dividas: v }))}
-                    />
-                  </div>
-                </div>
-              )}
-
               {step === 3 && (
                 <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground">
-                      Valor estimado do imóvel
-                    </label>
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Sugestão com base na sua renda:{" "}
-                      {getValorImovelSugerido(profile.rendaMensal).toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })}
-                    </p>
-                    <CurrencyInput
-                      value={profile.valorImovel}
-                      onChange={(v) => setProfile((p) => ({ ...p, valorImovel: v }))}
-                    />
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setProfile((p) => ({ ...p, temDividas: true }))}
+                      className={`flex-1 py-4 rounded-xl text-sm font-semibold border-2 transition-all ${
+                        profile.temDividas
+                          ? "border-primary bg-primary/5 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/30"
+                      }`}
+                    >
+                      Sim
+                    </button>
+                    <button
+                      onClick={() => setProfile((p) => ({ ...p, temDividas: false, dividas: 0 }))}
+                      className={`flex-1 py-4 rounded-xl text-sm font-semibold border-2 transition-all ${
+                        !profile.temDividas
+                          ? "border-primary bg-primary/5 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/30"
+                      }`}
+                    >
+                      Não
+                    </button>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground">
-                      Prazo desejado (anos)
-                    </label>
-                    <div className="flex gap-2 mt-1">
-                      {[3, 5, 7, 10].map((y) => (
-                        <button
-                          key={y}
-                          onClick={() => setProfile((p) => ({ ...p, prazoAnos: y }))}
-                          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
-                            profile.prazoAnos === y
-                              ? "gradient-primary text-primary-foreground shadow-md"
-                              : "bg-muted text-muted-foreground hover:bg-muted/80"
-                          }`}
-                        >
-                          {y} anos
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  {profile.temDividas && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                    >
+                      <label className="text-sm font-medium text-foreground">Total de dívidas</label>
+                      <CurrencyInput
+                        value={profile.dividas}
+                        onChange={(v) => setProfile((p) => ({ ...p, dividas: v }))}
+                      />
+                    </motion.div>
+                  )}
                 </div>
               )}
 
               {step === 4 && (
-                <div className="space-y-4 text-center">
-                  <div className="text-4xl">🏡</div>
-                  <p className="text-foreground font-medium">
-                    Seu plano está pronto! Vamos juntos conquistar sua casa.
-                  </p>
-                  <div className="bg-muted rounded-xl p-4 text-left space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Renda</span>
-                      <span className="font-semibold text-foreground">
-                        {profile.rendaMensal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Sobra estimada</span>
-                      <span className="font-semibold text-success">
-                        {getSaldo(profile).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Meta do imóvel</span>
-                      <span className="font-semibold text-foreground">
-                        {profile.valorImovel.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Entrada (20%)</span>
-                      <span className="font-semibold text-secondary">
-                        {(profile.valorImovel * 0.2).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                      </span>
-                    </div>
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    {[3, 5, 10].map((y) => (
+                      <button
+                        key={y}
+                        onClick={() => {
+                          const valorImovel = getValorImovelSugerido(profile.rendaMensal);
+                          setProfile((p) => ({ ...p, prazoAnos: y, valorImovel }));
+                        }}
+                        className={`flex-1 py-4 rounded-xl text-sm font-bold transition-all ${
+                          profile.prazoAnos === y
+                            ? "gradient-primary text-primary-foreground shadow-md"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}
+                      >
+                        {y} anos
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
@@ -253,7 +232,7 @@ export default function Onboarding() {
                 <Button
                   variant="outline"
                   onClick={prev}
-                  className="flex-1 bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20"
+                  className="flex-1 rounded-xl h-12"
                 >
                   <ArrowLeft className="w-4 h-4 mr-1" /> Voltar
                 </Button>
@@ -261,11 +240,23 @@ export default function Onboarding() {
               <Button
                 onClick={next}
                 disabled={!canNext()}
-                className="flex-1 bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-semibold"
+                className="flex-1 gradient-primary text-primary-foreground hover:opacity-90 font-semibold rounded-xl h-12"
               >
-                {step === STEPS.length - 1 ? "Começar!" : "Próximo"}
+                {step === STEPS.length - 1 ? "Montar meu plano 🚀" : "Próximo"}
                 {step < STEPS.length - 1 && <ArrowRight className="w-4 h-4 ml-1" />}
               </Button>
+            </div>
+
+            {/* Step indicator */}
+            <div className="flex justify-center gap-2 mt-4">
+              {STEPS.map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    i === step ? "bg-primary w-6" : i < step ? "bg-primary/40" : "bg-muted"
+                  }`}
+                />
+              ))}
             </div>
           </motion.div>
         </AnimatePresence>

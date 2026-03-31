@@ -16,20 +16,23 @@ export default function Index() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen gradient-hero flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6"
+          transition={{ duration: 0.6 }}
+          className="mb-8"
         >
-          <div className="w-20 h-20 rounded-2xl bg-primary-foreground/20 flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-            <Home className="w-10 h-10 text-primary-foreground" />
+          <div className="w-24 h-24 rounded-3xl gradient-hero flex items-center justify-center mx-auto mb-5 shadow-xl animate-pulse-glow">
+            <Home className="w-12 h-12 text-primary-foreground" />
           </div>
-          <h1 className="text-4xl font-extrabold text-primary-foreground mb-2">CasaMeta</h1>
-          <p className="text-primary-foreground/80 text-lg max-w-xs mx-auto">
-            Seu planejador financeiro para conquistar a casa própria
+          <h1 className="text-4xl font-black text-foreground mb-3">GranaCasa</h1>
+          <p className="text-lg text-muted-foreground max-w-xs mx-auto leading-relaxed">
+            Sua casa começa com um plano
+          </p>
+          <p className="text-sm text-muted-foreground/70 mt-2 max-w-xs mx-auto">
+            Organize seu dinheiro e descubra quando você pode sair do aluguel
           </p>
         </motion.div>
 
@@ -46,10 +49,12 @@ export default function Index() {
           ].map(({ icon: Icon, text }) => (
             <div
               key={text}
-              className="flex items-center gap-3 bg-primary-foreground/10 backdrop-blur-sm rounded-xl px-4 py-3"
+              className="flex items-center gap-3 bg-primary/5 border border-primary/10 rounded-xl px-4 py-3"
             >
-              <Icon className="w-5 h-5 text-primary-foreground" />
-              <span className="text-sm text-primary-foreground font-medium">{text}</span>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Icon className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-sm text-foreground font-medium">{text}</span>
             </div>
           ))}
         </motion.div>
@@ -58,19 +63,26 @@ export default function Index() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
+          className="space-y-3 w-full max-w-xs"
         >
           <Button
             onClick={() => navigate("/onboarding")}
             size="lg"
-            className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-bold text-base px-8 rounded-xl shadow-lg"
+            className="w-full gradient-primary text-primary-foreground hover:opacity-90 font-bold text-base rounded-xl shadow-lg h-14"
           >
             Começar agora <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
+          <button
+            onClick={() => navigate("/onboarding")}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Já tenho conta
+          </button>
         </motion.div>
       </div>
 
       <div className="text-center pb-6">
-        <p className="text-primary-foreground/50 text-xs">
+        <p className="text-muted-foreground/50 text-xs">
           Feito para brasileiros que sonham com a casa própria 🇧🇷
         </p>
       </div>
