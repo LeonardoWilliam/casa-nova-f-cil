@@ -19,6 +19,7 @@ import {
   Calculator,
   Lightbulb,
   ChevronRight,
+  Target,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
