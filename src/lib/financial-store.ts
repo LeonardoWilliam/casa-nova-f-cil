@@ -21,6 +21,113 @@ export interface FinancialProfile {
   disciplinaAtiva: boolean;
   disciplinaDiaInicio: string;
   disciplinaCheckins: string[]; // dates
+  // Gamification
+  xp: number;
+  badges: string[]; // badge IDs earned
+}
+
+// === GAMIFICATION SYSTEM ===
+
+export interface GameLevel {
+  id: number;
+  name: string;
+  emoji: string;
+  minXp: number;
+  color: string;
+}
+
+export const GAME_LEVELS: GameLevel[] = [
+  { id: 1, name: "Saindo do aperto", emoji: "🌱", minXp: 0, color: "hsl(0, 84%, 60%)" },
+  { id: 2, name: "Organizando a vida", emoji: "📋", minXp: 200, color: "hsl(38, 92%, 50%)" },
+  { id: 3, name: "Poupador iniciante", emoji: "🐣", minXp: 500, color: "hsl(38, 92%, 50%)" },
+  { id: 4, name: "No caminho certo", emoji: "🚶", minXp: 1000, color: "hsl(142, 71%, 45%)" },
+  { id: 5, name: "Disciplinado", emoji: "💪", minXp: 2000, color: "hsl(142, 71%, 35%)" },
+  { id: 6, name: "Quase lá", emoji: "🏃", minXp: 3500, color: "hsl(217, 91%, 60%)" },
+  { id: 7, name: "Pronto pra comprar", emoji: "🏠", minXp: 5000, color: "hsl(280, 50%, 55%)" },
+  { id: 8, name: "Mestre financeiro", emoji: "👑", minXp: 8000, color: "hsl(45, 93%, 47%)" },
+];
+
+export interface Badge {
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+}
+
+export const ALL_BADGES: Badge[] = [
+  { id: "first_checkin", name: "Primeiro passo", emoji: "🥇", description: "Fez seu primeiro check-in" },
+  { id: "streak_7", name: "1 semana firme", emoji: "🔥", description: "7 check-ins no modo disciplina" },
+  { id: "streak_30", name: "1 mês de foco", emoji: "⚡", description: "30 check-ins no modo disciplina" },
+  { id: "streak_90", name: "Guerreiro 90 dias", emoji: "🏆", description: "Completou os 90 dias" },
+  { id: "plano_criado", name: "Plano criado", emoji: "📝", description: "Criou seu plano financeiro" },
+  { id: "sem_dividas", name: "Livre de dívidas", emoji: "🎉", description: "Declarou não ter dívidas" },
+  { id: "saude_verde", name: "Saúde verde", emoji: "💚", description: "Alcançou saúde financeira verde" },
+  { id: "simulador_usado", name: "Explorador", emoji: "🔮", description: "Usou o simulador financeiro" },
+  { id: "meta_50", name: "Meio caminho", emoji: "🌟", description: "Alcançou 50% da meta de entrada" },
+  { id: "economizou_1000", name: "Primeiro mil", emoji: "💰", description: "Economizou R$1.000" },
+];
+
+export function getCurrentLevel(xp: number): GameLevel {
+  let level = GAME_LEVELS[0];
+  for (const l of GAME_LEVELS) {
+    if (xp >= l.minXp) level = l;
+  }
+  return level;
+}
+
+export function getNextLevel(xp: number): GameLevel | null {
+  for (const l of GAME_LEVELS) {
+    if (xp < l.minXp) return l;
+  }
+  return null;
+}
+
+export function getLevelProgress(xp: number): number {
+  const current = getCurrentLevel(xp);
+  const next = getNextLevel(xp);
+  if (!next) return 100;
+  const range = next.minXp - current.minXp;
+  const progress = xp - current.minXp;
+  return Math.round((progress / range) * 100);
+}
+
+export function addXp(profile: FinancialProfile, amount: number): FinancialProfile {
+  return { ...profile, xp: (profile.xp || 0) + amount };
+}
+
+export function earnBadge(profile: FinancialProfile, badgeId: string): FinancialProfile {
+  const badges = profile.badges || [];
+  if (badges.includes(badgeId)) return profile;
+  return { ...profile, badges: [...badges, badgeId], xp: (profile.xp || 0) + 100 };
+}
+
+export function getEarnedBadges(profile: FinancialProfile): Badge[] {
+  const ids = profile.badges || [];
+  return ALL_BADGES.filter(b => ids.includes(b.id));
+}
+
+// Daily challenges
+export interface DailyChallenge {
+  id: string;
+  title: string;
+  description: string;
+  xpReward: number;
+  emoji: string;
+}
+
+export function getDailyChallenges(profile: FinancialProfile): DailyChallenge[] {
+  const day = new Date().getDay();
+  const challenges: DailyChallenge[] = [
+    { id: "no_spend", title: "Dia sem gastos extras", description: "Não gaste com nada supérfluo hoje", xpReward: 30, emoji: "🚫" },
+    { id: "save_10", title: "Guarde R$10", description: "Separe pelo menos R$10 hoje", xpReward: 20, emoji: "💰" },
+    { id: "review_budget", title: "Revise seu orçamento", description: "Olhe seus gastos e veja onde cortar", xpReward: 15, emoji: "📊" },
+    { id: "cook_home", title: "Cozinhe em casa", description: "Evite delivery e cozinhe hoje", xpReward: 25, emoji: "🍳" },
+    { id: "walk", title: "Vá a pé", description: "Economize com transporte hoje", xpReward: 20, emoji: "🚶" },
+    { id: "cancel_sub", title: "Cancele algo", description: "Cancele uma assinatura que não usa", xpReward: 50, emoji: "✂️" },
+    { id: "learn", title: "Aprenda sobre finanças", description: "Leia um artigo sobre investimento", xpReward: 15, emoji: "📚" },
+  ];
+  // Rotate based on day
+  return [challenges[day % challenges.length], challenges[(day + 3) % challenges.length]];
 }
 
 const DEFAULT_PROFILE: FinancialProfile = {
