@@ -232,7 +232,7 @@ const ChartLegend = RechartsPrimitive.Legend;
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-      payload?: Array<Record<string, any>>;
+      payload?: any[];
       verticalAlign?: "top" | "bottom";
       hideIcon?: boolean;
       nameKey?: string;
