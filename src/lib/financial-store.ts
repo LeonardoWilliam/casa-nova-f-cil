@@ -152,6 +152,8 @@ const DEFAULT_PROFILE: FinancialProfile = {
   disciplinaAtiva: false,
   disciplinaDiaInicio: "",
   disciplinaCheckins: [],
+  xp: 0,
+  badges: [],
 };
 
 const STORAGE_KEY = "granacasa_profile";
