@@ -38,6 +38,8 @@ export default function Onboarding() {
     disciplinaAtiva: false,
     disciplinaDiaInicio: "",
     disciplinaCheckins: [],
+    xp: 0,
+    badges: [],
   });
 
   const updateGasto = (key: keyof typeof profile.gastosFixos, val: number) => {
