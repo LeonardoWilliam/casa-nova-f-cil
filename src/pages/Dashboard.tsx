@@ -1,35 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  getProfile,
-  FinancialProfile,
-  getTotalGastosFixos,
-  getSaldo,
-  getEntradaImovel,
-  getMesesParaEntrada,
-  getSaudeFinanceira,
-  formatCurrency,
-  formatTempoRestante,
-  getCurrentLevel,
-  getNextLevel,
-  getLevelProgress,
+  getProfile, FinancialProfile, getTotalGastosFixos, getSaldo,
+  getEntradaImovel, getMesesParaEntrada, getSaudeFinanceira,
+  formatCurrency, formatTempoRestante, getCurrentLevel, getNextLevel,
+  getLevelProgress, getTransactionStats, getMonthlyProjections,
+  canUndo, canRedo, undo, redo, saveProfile, addXp, earnBadge,
 } from "@/lib/financial-store";
 import {
-  TrendingUp,
-  PiggyBank,
-  Lightbulb,
-  ChevronRight,
-  Calculator,
-  DollarSign,
-  CreditCard,
-  Wallet,
-  Zap,
-  Flame,
+  TrendingUp, PiggyBank, Lightbulb, ChevronRight, Calculator,
+  DollarSign, CreditCard, Wallet, Zap, Flame, Plus, Undo2, Redo2,
+  ArrowUpRight, ArrowDownRight, BarChart3,
 } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 import { BottomNav } from "@/components/BottomNav";
-import { Progress } from "@/components/ui/progress";
+import { AddTransactionDialog } from "@/components/AddTransactionDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const HEALTH_MAP = {
   verde: { label: "Saudável", color: "text-success", bg: "bg-primary/10", emoji: "🟢" },
@@ -38,26 +25,33 @@ const HEALTH_MAP = {
 };
 
 const PIE_COLORS = [
-  "hsl(142, 71%, 35%)",
-  "hsl(217, 91%, 60%)",
-  "hsl(38, 92%, 50%)",
-  "hsl(280, 50%, 55%)",
-  "hsl(0, 84%, 60%)",
-  "hsl(180, 50%, 45%)",
-  "hsl(320, 60%, 50%)",
+  "hsl(142, 71%, 35%)", "hsl(217, 91%, 60%)", "hsl(38, 92%, 50%)",
+  "hsl(280, 50%, 55%)", "hsl(0, 84%, 60%)", "hsl(180, 50%, 45%)", "hsl(320, 60%, 50%)",
 ];
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<FinancialProfile | null>(null);
+  const [showAddTx, setShowAddTx] = useState(false);
+  const [, setRefresh] = useState(0);
+
+  const reload = useCallback(() => {
+    const p = getProfile();
+    setProfile(p);
+    setRefresh(r => r + 1);
+  }, []);
 
   useEffect(() => {
     const p = getProfile();
-    if (!p.onboardingCompleto) {
-      navigate("/");
-      return;
-    }
-    setProfile(p);
+    if (!p.onboardingCompleto) { navigate("/"); return; }
+    // Check badges
+    const txStats = getTransactionStats();
+    let updated = p;
+    if (txStats.count >= 1) updated = earnBadge(updated, "first_tx");
+    if (txStats.count >= 10) updated = earnBadge(updated, "tx_10");
+    if (updated !== p) { saveProfile(updated); }
+    setProfile(updated);
   }, [navigate]);
 
   if (!profile) return null;
@@ -75,10 +69,10 @@ export default function Dashboard() {
   const nextLevel = getNextLevel(xp);
   const levelProg = getLevelProgress(xp);
 
-  const progressPercent = Math.min(
-    ((profile.totalEconomizado) / entrada) * 100,
-    100
-  );
+  const progressPercent = Math.min((profile.totalEconomizado / entrada) * 100, 100);
+
+  const txStats = getTransactionStats();
+  const projections = getMonthlyProjections(profile, 6);
 
   const chartData = [
     { name: "Aluguel", value: profile.gastosFixos.aluguel },
@@ -88,13 +82,27 @@ export default function Dashboard() {
     { name: "Alimentação", value: profile.gastosFixos.alimentacao },
     { name: "Variáveis", value: profile.gastosVariaveis },
     { name: "Outros", value: profile.gastosFixos.outros },
-  ].filter((d) => d.value > 0);
+  ].filter(d => d.value > 0);
 
-  const sugestao = profile.gastosVariaveis > profile.rendaMensal * 0.1
-    ? `Você pode economizar ${formatCurrency(profile.gastosVariaveis * 0.3)} reduzindo gastos com delivery e lazer`
-    : saldo > 0
-    ? `Economizando mais ${formatCurrency(saldo * 0.1)}/mês, você antecipa sua casa em ~${Math.max(1, Math.round(meses * 0.1))} meses`
-    : "Tente reduzir alguns gastos fixos para começar a economizar";
+  const previsaoEconomia = Math.max(saldo * 0.5, profile.metaMensalEconomia || 0);
+
+  const handleUndo = () => {
+    const desc = undo();
+    if (desc) { toast({ title: "Desfeito ↩️", description: desc }); reload(); }
+  };
+  const handleRedo = () => {
+    const desc = redo();
+    if (desc) { toast({ title: "Refeito ↪️", description: desc }); reload(); }
+  };
+
+  const handleTxAdded = () => {
+    // Give XP for transaction
+    let p = getProfile();
+    p = addXp(p, 15);
+    saveProfile(p);
+    reload();
+    toast({ title: "Transação registrada! ✅", description: "+15 XP" });
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -106,11 +114,19 @@ export default function Dashboard() {
               <p className="text-primary-foreground/80 text-sm">Olá, {profile.nome || "Usuário"} 👋</p>
               <h1 className="text-xl font-bold text-primary-foreground">Meu painel</h1>
             </div>
-            <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${healthInfo.bg} ${healthInfo.color} border border-border/20`}>
-              {healthInfo.emoji} {healthInfo.label}
+            <div className="flex items-center gap-2">
+              <button onClick={handleUndo} disabled={!canUndo()} className="p-2 rounded-full bg-primary-foreground/10 disabled:opacity-30">
+                <Undo2 className="w-4 h-4 text-primary-foreground" />
+              </button>
+              <button onClick={handleRedo} disabled={!canRedo()} className="p-2 rounded-full bg-primary-foreground/10 disabled:opacity-30">
+                <Redo2 className="w-4 h-4 text-primary-foreground" />
+              </button>
+              <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${healthInfo.bg} ${healthInfo.color} border border-border/20`}>
+                {healthInfo.emoji} {healthInfo.label}
+              </div>
             </div>
           </div>
-          {/* Level bar in header */}
+          {/* Level bar */}
           <div className="bg-primary-foreground/10 rounded-xl p-3 flex items-center gap-3">
             <span className="text-xl">{level.emoji}</span>
             <div className="flex-1">
@@ -133,10 +149,39 @@ export default function Dashboard() {
       </div>
 
       <div className="max-w-md mx-auto px-4 -mt-8 space-y-4">
-        {/* BLOCO 1: Meta principal */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        {/* Saldo atual do mês */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="bg-card rounded-2xl p-5 shadow-lg border border-border"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-primary" />
+              <h3 className="font-bold text-foreground text-sm">Saldo do mês</h3>
+            </div>
+            <span className={`text-lg font-bold ${txStats.saldoMes >= 0 ? "text-success" : "text-danger"}`}>
+              {formatCurrency(txStats.saldoMes)}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-primary/5 rounded-xl p-3 flex items-center gap-2">
+              <ArrowUpRight className="w-4 h-4 text-success" />
+              <div>
+                <p className="text-[10px] text-muted-foreground">Entradas</p>
+                <p className="text-sm font-bold text-success">{formatCurrency(txStats.totalEntradas)}</p>
+              </div>
+            </div>
+            <div className="bg-destructive/5 rounded-xl p-3 flex items-center gap-2">
+              <ArrowDownRight className="w-4 h-4 text-danger" />
+              <div>
+                <p className="text-[10px] text-muted-foreground">Saídas</p>
+                <p className="text-sm font-bold text-danger">{formatCurrency(txStats.totalSaidas)}</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Meta principal */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
           className="bg-card rounded-2xl p-5 shadow-lg border border-border"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -148,25 +193,15 @@ export default function Dashboard() {
             <span className="font-semibold text-foreground">{formatCurrency(entrada)}</span>
           </div>
           <div className="w-full h-4 bg-muted rounded-full overflow-hidden mb-2">
-            <motion.div
-              className="h-full gradient-primary rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 1, delay: 0.3 }}
-            />
+            <motion.div className="h-full gradient-primary rounded-full" initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} transition={{ duration: 1, delay: 0.3 }} />
           </div>
           <p className="text-xs text-muted-foreground">
             Faltam <span className="font-semibold text-foreground">{formatTempoRestante(meses)}</span>
           </p>
         </motion.div>
 
-        {/* BLOCO 2: Resumo financeiro */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-3 gap-3"
-        >
+        {/* Resumo financeiro */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-3 gap-3">
           <div className="bg-card rounded-2xl p-4 shadow-md border border-border text-center">
             <DollarSign className="w-5 h-5 text-primary mx-auto mb-1" />
             <p className="text-[10px] text-muted-foreground mb-0.5">Receita</p>
@@ -178,19 +213,41 @@ export default function Dashboard() {
             <p className="text-sm font-bold text-foreground">{formatCurrency(totalGastos)}</p>
           </div>
           <div className="bg-card rounded-2xl p-4 shadow-md border border-border text-center">
-            <Wallet className="w-5 h-5 text-success mx-auto mb-1" />
-            <p className="text-[10px] text-muted-foreground mb-0.5">Sobra</p>
-            <p className={`text-sm font-bold ${saldo >= 0 ? "text-success" : "text-danger"}`}>
-              {formatCurrency(saldo)}
-            </p>
+            <TrendingUp className="w-5 h-5 text-success mx-auto mb-1" />
+            <p className="text-[10px] text-muted-foreground mb-0.5">Previsão</p>
+            <p className="text-sm font-bold text-success">{formatCurrency(previsaoEconomia)}/mês</p>
           </div>
         </motion.div>
 
-        {/* BLOCO 3: Gráfico pizza */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+        {/* Projeção mensal */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+          className="bg-card rounded-2xl p-5 shadow-lg border border-border"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart3 className="w-5 h-5 text-secondary" />
+            <h3 className="font-bold text-foreground text-sm">Projeção de economia</h3>
+          </div>
+          <div className="h-40">
+            <ResponsiveContainer>
+              <AreaChart data={projections}>
+                <defs>
+                  <linearGradient id="colorAcum" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(142, 71%, 45%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,85%)" />
+                <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke="hsl(0,0%,60%)" />
+                <YAxis tick={{ fontSize: 10 }} stroke="hsl(0,0%,60%)" tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
+                <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                <Area type="monotone" dataKey="acumulado" stroke="hsl(142, 71%, 45%)" fill="url(#colorAcum)" strokeWidth={2} name="Acumulado" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </motion.div>
+
+        {/* Gráfico pizza */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="bg-card rounded-2xl p-5 shadow-lg border border-border"
         >
           <div className="flex items-center gap-2 mb-3">
@@ -202,9 +259,7 @@ export default function Dashboard() {
               <ResponsiveContainer>
                 <PieChart>
                   <Pie data={chartData} cx="50%" cy="50%" innerRadius={28} outerRadius={50} paddingAngle={3} dataKey="value">
-                    {chartData.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
+                    {chartData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
@@ -221,37 +276,27 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* BLOCO 4: Sugestão inteligente */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+        {/* Sugestão inteligente */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
           className="bg-primary/5 border border-primary/15 rounded-2xl p-5"
         >
           <div className="flex items-center gap-2 mb-2">
             <Lightbulb className="w-5 h-5 text-primary" />
             <h3 className="font-bold text-foreground text-sm">Sugestão inteligente</h3>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">{sugestao}</p>
-          <button
-            onClick={() => navigate("/simulador")}
-            className="text-sm font-semibold text-primary flex items-center gap-1"
-          >
+          <p className="text-sm text-muted-foreground mb-3">
+            {profile.gastosVariaveis > profile.rendaMensal * 0.1
+              ? `Você pode economizar ${formatCurrency(profile.gastosVariaveis * 0.3)} reduzindo gastos com delivery e lazer`
+              : `Economizando ${formatCurrency(previsaoEconomia)}/mês, sua casa chega em ${formatTempoRestante(meses)}`}
+          </p>
+          <button onClick={() => navigate("/simulador")} className="text-sm font-semibold text-primary flex items-center gap-1">
             Ver como <ChevronRight className="w-4 h-4" />
           </button>
         </motion.div>
 
         {/* Quick links */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="grid grid-cols-2 gap-3"
-        >
-          <button
-            onClick={() => navigate("/simulador")}
-            className="bg-card rounded-2xl p-4 shadow-lg border border-border flex items-center gap-3 hover:shadow-xl transition-shadow"
-          >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid grid-cols-2 gap-3">
+          <button onClick={() => navigate("/simulador")} className="bg-card rounded-2xl p-4 shadow-lg border border-border flex items-center gap-3 hover:shadow-xl transition-shadow">
             <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
               <Calculator className="w-5 h-5 text-secondary" />
             </div>
@@ -260,10 +305,7 @@ export default function Dashboard() {
               <p className="text-[10px] text-muted-foreground">E se...?</p>
             </div>
           </button>
-          <button
-            onClick={() => navigate("/disciplina")}
-            className="bg-card rounded-2xl p-4 shadow-lg border border-border flex items-center gap-3 hover:shadow-xl transition-shadow"
-          >
+          <button onClick={() => navigate("/disciplina")} className="bg-card rounded-2xl p-4 shadow-lg border border-border flex items-center gap-3 hover:shadow-xl transition-shadow">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Flame className="w-5 h-5 text-primary" />
             </div>
@@ -275,6 +317,15 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
+      {/* FAB */}
+      <button
+        onClick={() => setShowAddTx(true)}
+        className="fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full gradient-primary shadow-xl flex items-center justify-center hover:scale-105 transition-transform"
+      >
+        <Plus className="w-6 h-6 text-primary-foreground" />
+      </button>
+
+      <AddTransactionDialog open={showAddTx} onClose={() => setShowAddTx(false)} onAdded={handleTxAdded} />
       <BottomNav />
     </div>
   );
