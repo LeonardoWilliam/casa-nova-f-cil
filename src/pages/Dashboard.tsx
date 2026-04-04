@@ -204,21 +204,26 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Resumo financeiro */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-3 gap-3">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-2 gap-3">
           <div className="bg-card rounded-2xl p-4 shadow-md border border-border text-center">
             <DollarSign className="w-5 h-5 text-primary mx-auto mb-1" />
-            <p className="text-[10px] text-muted-foreground mb-0.5">Receita</p>
-            <p className="text-sm font-bold text-foreground">{formatCurrency(profile.rendaMensal)}</p>
+            <p className="text-[10px] text-muted-foreground mb-0.5">Economia mensal</p>
+            <p className={`text-sm font-bold ${economiaMensal >= 0 ? "text-success" : "text-danger"}`}>{formatCurrency(economiaMensal)}</p>
           </div>
           <div className="bg-card rounded-2xl p-4 shadow-md border border-border text-center">
             <CreditCard className="w-5 h-5 text-secondary mx-auto mb-1" />
-            <p className="text-[10px] text-muted-foreground mb-0.5">Gastos</p>
-            <p className="text-sm font-bold text-foreground">{formatCurrency(totalGastos)}</p>
+            <p className="text-[10px] text-muted-foreground mb-0.5">Tempo p/ meta</p>
+            <p className="text-sm font-bold text-foreground">{tempoParaMeta > 0 ? `${tempoParaMeta} meses` : "—"}</p>
           </div>
           <div className="bg-card rounded-2xl p-4 shadow-md border border-border text-center">
-            <TrendingUp className="w-5 h-5 text-success mx-auto mb-1" />
+            <Wallet className="w-5 h-5 text-success mx-auto mb-1" />
             <p className="text-[10px] text-muted-foreground mb-0.5">Previsão</p>
             <p className="text-sm font-bold text-success">{formatCurrency(previsaoEconomia)}/mês</p>
+          </div>
+          <div className="bg-card rounded-2xl p-4 shadow-md border border-border text-center">
+            <TrendingUp className="w-5 h-5 text-primary mx-auto mb-1" />
+            <p className="text-[10px] text-muted-foreground mb-0.5">Receita</p>
+            <p className="text-sm font-bold text-foreground">{formatCurrency(profile.rendaMensal)}</p>
           </div>
         </motion.div>
 
