@@ -84,7 +84,10 @@ export default function Dashboard() {
     { name: "Outros", value: profile.gastosFixos.outros },
   ].filter(d => d.value > 0);
 
-  const previsaoEconomia = Math.max(saldo * 0.5, profile.metaMensalEconomia || 0);
+  const economiaMensal = txStats.totalEntradas - txStats.totalSaidas;
+  const previsaoEconomia = economiaMensal > 0 ? economiaMensal : Math.max(saldo * 0.5, profile.metaMensalEconomia || 0);
+  const valorRestante = entrada - profile.totalEconomizado;
+  const tempoParaMeta = economiaMensal > 0 ? Math.ceil(valorRestante / economiaMensal) : meses;
 
   const handleUndo = () => {
     const desc = undo();
