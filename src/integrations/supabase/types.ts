@@ -14,7 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      actions_history: {
+        Row: {
+          created_at: string
+          dados_anteriores: Json | null
+          dados_novos: Json | null
+          entidade: string
+          id: string
+          tipo_acao: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          entidade: string
+          id?: string
+          tipo_acao: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          entidade?: string
+          id?: string
+          tipo_acao?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          created_at: string
+          id: string
+          prazo_meses: number
+          tipo: string
+          updated_at: string
+          user_id: string
+          valor_atual: number
+          valor_total: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prazo_meses: number
+          tipo: string
+          updated_at?: string
+          user_id: string
+          valor_atual?: number
+          valor_total: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prazo_meses?: number
+          tipo?: string
+          updated_at?: string
+          user_id?: string
+          valor_atual?: number
+          valor_total?: number
+        }
+        Relationships: []
+      }
+      monthly_summary: {
+        Row: {
+          created_at: string
+          id: string
+          mes: string
+          saldo: number
+          total_entrada: number
+          total_saida: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mes: string
+          saldo?: number
+          total_entrada?: number
+          total_saida?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mes?: string
+          saldo?: number
+          total_entrada?: number
+          total_saida?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          categoria: string
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+          tipo: string
+          updated_at: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          tipo: string
+          updated_at?: string
+          user_id: string
+          valor: number
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          tipo?: string
+          updated_at?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
