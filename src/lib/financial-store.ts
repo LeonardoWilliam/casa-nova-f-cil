@@ -246,17 +246,39 @@ export function getSmartAlerts(profile: FinancialProfile): Alert[] {
     alerts.push({ id: "topcat", type: "tip", icon: "📊", message: `${cat.emoji} ${cat.label} representa ${Math.round((topCat[1] / totalBudget) * 100)}% da sua renda. Tente reduzir!` });
   }
 
+  // Lazer > 30% da renda
+  const lazerTotal = catTotals["lazer"] || 0;
+  if (lazerTotal > totalBudget * 0.3) {
+    alerts.push({ id: "lazer_alto", type: "warning", icon: "🎮", message: `Você está gastando muito com lazer! ${formatCurrency(lazerTotal)} é ${Math.round((lazerTotal / totalBudget) * 100)}% da sua renda` });
+  }
+
   // Delivery pattern
   const deliveryTotal = catTotals["delivery"] || 0;
   if (deliveryTotal > 200) {
     alerts.push({ id: "delivery", type: "tip", icon: "🍔", message: `Você já gastou ${formatCurrency(deliveryTotal)} com delivery este mês. Cozinhar pode economizar até 60%!` });
   }
 
-  // Savings projection
+  // Saldo > 500 → sugestão de guardar mais
+  const economiaMensal = monthIncome - monthExpenses;
   const saldo = getSaldo(profile);
+  if (economiaMensal > 500) {
+    alerts.push({ id: "guardar_mais", type: "tip", icon: "💰", message: `Você pode guardar mais esse mês! Sobra de ${formatCurrency(economiaMensal)} disponível para investir na sua meta` });
+  }
+
+  // Savings projection
   if (saldo > 0 && monthIncome > 0) {
     const potentialSaving = saldo * 0.5;
     alerts.push({ id: "saving", type: "tip", icon: "💡", message: `Se guardar ${formatCurrency(potentialSaving)}/mês, você terá ${formatCurrency(potentialSaving * 12)} em 1 ano!` });
+  }
+
+  // Tempo para meta
+  if (economiaMensal > 0) {
+    const entrada = getEntradaImovel(profile);
+    const valorRestante = entrada - profile.totalEconomizado;
+    const tempoParaMeta = Math.ceil(valorRestante / economiaMensal);
+    if (valorRestante > 0 && tempoParaMeta <= 24) {
+      alerts.push({ id: "tempo_meta", type: "tip", icon: "🏠", message: `No ritmo atual, você alcança a entrada em ${tempoParaMeta} ${tempoParaMeta === 1 ? 'mês' : 'meses'}!` });
+    }
   }
 
   // Spending limit
