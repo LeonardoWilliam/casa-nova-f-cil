@@ -97,7 +97,14 @@ export async function logAction(action: {
   dados_anteriores?: Record<string, unknown> | null;
   dados_novos?: Record<string, unknown> | null;
 }) {
-  const { error } = await supabase.from("actions_history").insert([action]);
+  const payload = {
+    user_id: action.user_id,
+    tipo_acao: action.tipo_acao,
+    entidade: action.entidade,
+    dados_anteriores: action.dados_anteriores as import("@/integrations/supabase/types").Json ?? null,
+    dados_novos: action.dados_novos as import("@/integrations/supabase/types").Json ?? null,
+  };
+  const { error } = await supabase.from("actions_history").insert([payload]);
   if (error) throw error;
 }
 
