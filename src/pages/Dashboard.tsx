@@ -8,6 +8,8 @@ import {
   getLevelProgress, getTransactionStats, getMonthlyProjections,
   canUndo, canRedo, undo, redo, saveProfile, addXp, earnBadge,
 } from "@/lib/financial-store";
+import { calculateScore } from "@/store/userStore";
+import { ScoreCard } from "@/components/ScoreCard";
 import {
   TrendingUp, PiggyBank, Lightbulb, ChevronRight, Calculator,
   DollarSign, CreditCard, Wallet, Zap, Flame, Plus, Undo2, Redo2,
@@ -88,6 +90,18 @@ export default function Dashboard() {
   const previsaoEconomia = economiaMensal > 0 ? economiaMensal : Math.max(saldo * 0.5, profile.metaMensalEconomia || 0);
   const valorRestante = entrada - profile.totalEconomizado;
   const tempoParaMeta = economiaMensal > 0 ? Math.ceil(valorRestante / economiaMensal) : meses;
+
+  const streak = (profile.disciplinaCheckins || []).length;
+  const dayNumber = profile.disciplinaDiaInicio
+    ? Math.floor((Date.now() - new Date(profile.disciplinaDiaInicio).getTime()) / (1000 * 60 * 60 * 24)) + 1
+    : 1;
+  const financialScore = calculateScore(
+    economiaMensal,
+    profile.rendaMensal,
+    streak,
+    Math.max(dayNumber, 1),
+    txStats.totalSaidas
+  );
 
   const handleUndo = () => {
     const desc = undo();
@@ -226,6 +240,10 @@ export default function Dashboard() {
             <p className="text-sm font-bold text-foreground">{formatCurrency(profile.rendaMensal)}</p>
           </div>
         </motion.div>
+
+
+        {/* Score Financeiro */}
+        <ScoreCard score={financialScore} />
 
         {/* Projeção mensal */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}

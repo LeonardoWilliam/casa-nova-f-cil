@@ -11,6 +11,8 @@ import {
 import { ArrowLeft, User, DollarSign, Home, Clock, RotateCcw, Edit, Trophy, Zap, Star } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { Progress } from "@/components/ui/progress";
+import { getUserState } from "@/store/userStore";
+import { PlanBadge } from "@/components/PlanBadge";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -73,6 +75,7 @@ export default function Profile() {
             <span className="absolute -bottom-1 -right-1 text-xl">{level.emoji}</span>
           </div>
           <h2 className="text-xl font-bold text-foreground">{profile.nome || "Usuário"}</h2>
+          <PlanBadge plan={getUserState().plano} className="mt-1" />
           <p className="text-sm font-semibold mt-1" style={{ color: level.color }}>{level.name}</p>
           <div className="flex items-center justify-center gap-1 mt-1">
             <Zap className="w-3.5 h-3.5 text-primary" />
