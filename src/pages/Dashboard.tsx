@@ -241,6 +241,10 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
+
+        {/* Score Financeiro */}
+        <ScoreCard score={financialScore} />
+
         {/* Projeção mensal */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
           className="bg-card rounded-2xl p-5 shadow-lg border border-border"
