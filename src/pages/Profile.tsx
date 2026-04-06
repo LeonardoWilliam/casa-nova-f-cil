@@ -13,7 +13,6 @@ import { BottomNav } from "@/components/BottomNav";
 import { Progress } from "@/components/ui/progress";
 import { getUserState } from "@/store/userStore";
 import { PlanBadge } from "@/components/PlanBadge";
-import { Progress } from "@/components/ui/progress";
 
 export default function Profile() {
   const navigate = useNavigate();
