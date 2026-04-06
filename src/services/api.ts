@@ -97,7 +97,7 @@ export async function logAction(action: {
   dados_anteriores?: Record<string, unknown> | null;
   dados_novos?: Record<string, unknown> | null;
 }) {
-  const { error } = await supabase.from("actions_history").insert(action);
+  const { error } = await supabase.from("actions_history").insert([action]);
   if (error) throw error;
 }
 
