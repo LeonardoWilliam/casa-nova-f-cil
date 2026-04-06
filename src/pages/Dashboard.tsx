@@ -91,6 +91,18 @@ export default function Dashboard() {
   const valorRestante = entrada - profile.totalEconomizado;
   const tempoParaMeta = economiaMensal > 0 ? Math.ceil(valorRestante / economiaMensal) : meses;
 
+  const streak = (profile.disciplinaCheckins || []).length;
+  const dayNumber = profile.disciplinaDiaInicio
+    ? Math.floor((Date.now() - new Date(profile.disciplinaDiaInicio).getTime()) / (1000 * 60 * 60 * 24)) + 1
+    : 1;
+  const financialScore = calculateScore(
+    economiaMensal,
+    profile.rendaMensal,
+    streak,
+    Math.max(dayNumber, 1),
+    txStats.totalSaidas
+  );
+
   const handleUndo = () => {
     const desc = undo();
     if (desc) { toast({ title: "Desfeito ↩️", description: desc }); reload(); }
