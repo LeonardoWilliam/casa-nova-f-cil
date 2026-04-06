@@ -8,6 +8,8 @@ import {
   getLevelProgress, getTransactionStats, getMonthlyProjections,
   canUndo, canRedo, undo, redo, saveProfile, addXp, earnBadge,
 } from "@/lib/financial-store";
+import { calculateScore } from "@/store/userStore";
+import { ScoreCard } from "@/components/ScoreCard";
 import {
   TrendingUp, PiggyBank, Lightbulb, ChevronRight, Calculator,
   DollarSign, CreditCard, Wallet, Zap, Flame, Plus, Undo2, Redo2,
