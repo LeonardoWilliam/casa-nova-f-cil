@@ -11,6 +11,9 @@ import {
 import { ArrowLeft, User, DollarSign, Home, Clock, RotateCcw, Edit, Trophy, Zap, Star } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { Progress } from "@/components/ui/progress";
+import { getUserState } from "@/store/userStore";
+import { PlanBadge } from "@/components/PlanBadge";
+import { Progress } from "@/components/ui/progress";
 
 export default function Profile() {
   const navigate = useNavigate();
