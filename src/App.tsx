@@ -26,14 +26,15 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/simulador" element={<Simulator />} />
-          <Route path="/metas" element={<Goals />} />
-          <Route path="/alertas" element={<Alerts />} />
-          <Route path="/gastos" element={<Expenses />} />
-          <Route path="/perfil" element={<Profile />} />
-          <Route path="/disciplina" element={<Discipline />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/simulador" element={<ProtectedRoute><Simulator /></ProtectedRoute>} />
+          <Route path="/metas" element={<ProtectedRoute><Goals /></ProtectedRoute>} />
+          <Route path="/alertas" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
+          <Route path="/gastos" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
+          <Route path="/perfil" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/disciplina" element={<ProtectedRoute><Discipline /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

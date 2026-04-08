@@ -66,14 +66,14 @@ export default function Index() {
           className="space-y-3 w-full max-w-xs"
         >
           <Button
-            onClick={() => navigate("/onboarding")}
+            onClick={() => navigate("/auth")}
             size="lg"
             className="w-full gradient-primary text-primary-foreground hover:opacity-90 font-bold text-base rounded-xl shadow-lg h-14"
           >
             Começar agora <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
           <button
-            onClick={() => navigate("/onboarding")}
+            onClick={() => navigate("/auth")}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Já tenho conta
