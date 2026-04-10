@@ -13,6 +13,7 @@ import Alerts from "./pages/Alerts.tsx";
 import Expenses from "./pages/Expenses.tsx";
 import Profile from "./pages/Profile.tsx";
 import Discipline from "./pages/Discipline.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 
