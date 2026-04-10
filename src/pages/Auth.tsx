@@ -29,7 +29,9 @@ export default function Auth() {
         setMode("login");
       } else if (mode === "login") {
         await signIn(email, senha);
-        navigate("/dashboard");
+        const { getProfile } = await import("@/lib/financial-store");
+        const p = getProfile();
+        navigate(p.onboardingCompleto ? "/dashboard" : "/onboarding");
       } else {
         await signUp(email, senha);
         toast({

@@ -46,7 +46,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const p = getProfile();
-    if (!p.onboardingCompleto) { navigate("/"); return; }
+    if (!p.onboardingCompleto) { navigate("/onboarding"); return; }
     // Check badges
     const txStats = getTransactionStats();
     let updated = p;
